@@ -1,7 +1,8 @@
+package eu.woodhouse
+
 import zio.Console.printLine
 import zio.cli.HelpDoc.Span.text
 import zio.cli.*
-import Agent.*
 import Calculator.*
 
 object App extends ZIOCliDefault:
@@ -18,7 +19,7 @@ object App extends ZIOCliDefault:
       Options.decimal("exp")
   val help: HelpDoc = HelpDoc.p("Creates a copy of an existing repository")
 
-  val command = Command("cc", options).withHelp(help)
+  val command = Command("joint-finances", options).withHelp(help)
 
   val cliApp = CliApp.make(
     name = "Joint Contribution Calculator",

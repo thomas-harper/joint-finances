@@ -1,3 +1,7 @@
+package eu.woodhouse
+
+import eu.woodhouse.Agent
+
 object Calculator:
   private def agentContribution(agent: Agent, toBePaid: BigDecimal, totalYtdContribution: BigDecimal, goalRatio: BigDecimal): BigDecimal =
     ((totalYtdContribution + toBePaid) * goalRatio) - agent.ytdContribution + agent.fixedContribution
