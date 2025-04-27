@@ -14,10 +14,10 @@ object App extends ZIOCliDefault:
   *    - Create help (HelpDoc)
   */
   val options =
-    Options.decimal("tni") ++ Options.decimal("tytd") ++ Options.decimal("tfc") ++
-    Options.decimal("pni") ++ Options.decimal("pytd") ++ Options.decimal("pfc") ++
-      Options.decimal("exp")
-  val help: HelpDoc = HelpDoc.p("Creates a copy of an existing repository")
+    Options.decimal("ti") ++ Options.decimal("tytd") ++ Options.decimal("tfc") ++
+    Options.decimal("pi") ++ Options.decimal("pytd") ++ Options.decimal("pfc") ++
+      Options.decimal("exp") ++ Options.boolean("netto")
+  val help: HelpDoc = HelpDoc.p("Calculates monthly contributions")
 
   val command = Command("joint-finances", options).withHelp(help)
 
@@ -27,7 +27,9 @@ object App extends ZIOCliDefault:
     summary = text("Joint contribution calculator"),
     command = command
   ) {
-    case (tni, tytd, tfc, pni, pytd, pfc, exp) =>
+    case (ti, tytd, tfc, pi, pytd, pfc, exp, netto) =>
+      val tni = if netto then ti else ti - incomeTax(ti)
+      val pni = if netto then pi else pi - incomeTax(pi)
       val t = Agent(netIncome = tni, ytdContribution = tytd, fixedContribution = tfc)
       val p = Agent(netIncome = pni, ytdContribution = pytd, fixedContribution = pfc)
       val (ct, cp) = calculate(t, p, exp)

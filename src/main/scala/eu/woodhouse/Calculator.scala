@@ -1,6 +1,15 @@
 package eu.woodhouse
+import scala.math.*
 
-import eu.woodhouse.Agent
+import scala.math.BigDecimal.RoundingMode
+
+object TaxConstants:
+  val PBB: BigDecimal = 58800
+  val municipalTaxRate = 0.306
+  val stateTaxRate = 0.20
+  val funeralTaxRate = 0.0007
+  val stateTaxThreshold: BigDecimal = 625800
+  val earnedIncomeTaxDeduction: BigDecimal = 1500
 
 object Calculator:
   private def agentContribution(agent: Agent, toBePaid: BigDecimal, totalYtdContribution: BigDecimal, goalRatio: BigDecimal): BigDecimal =
@@ -15,3 +24,18 @@ object Calculator:
     val agentTContribution = agentContribution(agentT, toBePaidVariable, totalYtdContribution, goalRatioT)
     val agentPContribution = agentContribution(agentP, toBePaidVariable, totalYtdContribution, goalRatioP)
     (agentTContribution, agentPContribution)
+
+  def incomeTax(income: BigDecimal): BigDecimal =
+    import TaxConstants.*
+    val roundedIncome: BigDecimal = (income / 100).setScale(0, RoundingMode.FLOOR) * 100
+    val basicDeduction: BigDecimal = (0.293 * PBB / 100).setScale(0, RoundingMode.CEILING) * 100
+    val taxableIncome = (roundedIncome - basicDeduction).setScale(0, RoundingMode.FLOOR)
+    val municipalTax = (taxableIncome * municipalTaxRate).setScale(0, RoundingMode.FLOOR)
+    val stateTax = ((taxableIncome - stateTaxThreshold) * stateTaxRate).setScale(0, RoundingMode.FLOOR)
+    val funeralTax = (taxableIncome * funeralTaxRate).setScale(0, RoundingMode.FLOOR)
+    val salaryTaxDeduction = (2.776 * PBB - basicDeduction) * (municipalTaxRate - funeralTaxRate)
+    val tvFee: BigDecimal = (0.01 * 1.55 * PBB).setScale(0, RoundingMode.FLOOR)
+    val totalTax = municipalTax + stateTax + funeralTax + tvFee
+    val totalDeduction = salaryTaxDeduction + earnedIncomeTaxDeduction
+    totalTax - totalDeduction
+
