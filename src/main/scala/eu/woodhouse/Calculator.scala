@@ -10,6 +10,8 @@ object TaxConstants:
   val funeralTaxRate = 0.0007
   val stateTaxThreshold: BigDecimal = 625800
   val earnedIncomeTaxDeduction: BigDecimal = 1500
+  val basicDeduction: BigDecimal = (0.293 * PBB / 100).setScale(0, RoundingMode.CEILING) * 100
+  val tvFee: BigDecimal = (0.01 * 1.55 * PBB).setScale(0, RoundingMode.FLOOR)
 
 object Calculator:
   private def agentContribution(agent: Agent, toBePaid: BigDecimal, totalYtdContribution: BigDecimal, goalRatio: BigDecimal): BigDecimal =
@@ -27,15 +29,17 @@ object Calculator:
 
   def incomeTax(income: BigDecimal): BigDecimal =
     import TaxConstants.*
+    // Taxable Income Calculation
     val roundedIncome: BigDecimal = (income / 100).setScale(0, RoundingMode.FLOOR) * 100
-    val basicDeduction: BigDecimal = (0.293 * PBB / 100).setScale(0, RoundingMode.CEILING) * 100
     val taxableIncome = (roundedIncome - basicDeduction).setScale(0, RoundingMode.FLOOR)
+    // Tax Calculation
     val municipalTax = (taxableIncome * municipalTaxRate).setScale(0, RoundingMode.FLOOR)
     val stateTax = ((taxableIncome - stateTaxThreshold) * stateTaxRate).setScale(0, RoundingMode.FLOOR)
     val funeralTax = (taxableIncome * funeralTaxRate).setScale(0, RoundingMode.FLOOR)
+    // Tax Deductions
     val salaryTaxDeduction = (2.776 * PBB - basicDeduction) * (municipalTaxRate - funeralTaxRate)
-    val tvFee: BigDecimal = (0.01 * 1.55 * PBB).setScale(0, RoundingMode.FLOOR)
     val totalTax = municipalTax + stateTax + funeralTax + tvFee
     val totalDeduction = salaryTaxDeduction + earnedIncomeTaxDeduction
+
     totalTax - totalDeduction
 
